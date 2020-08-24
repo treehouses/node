@@ -1,0 +1,42 @@
+sudo: required
+addons:
+  apt:
+    update: true
+    packages:
+      - docker-ce
+services:
+  - docker
+script:
+  - export DOCKER_CLI_EXPERIMENTAL=enabled
+  - source sha_function.sh
+  - node_x86_sha=$(get_variant_sha "node" "alpine3.11" "amd64")
+  - echo $node_x86_sha
+  - treehouses_alpine_node_x86_sha=$(get_manifest_sha "treehouses/alpine-node" "amd64")
+  - echo $treehouses_alpine_node_x86_sha
+  - balena_rpi_sha=$(get_tag_sha "balenalib/raspberry-pi-alpine-node" "latest")
+  - echo $balena_rpi_sha
+  - treehouses_rpi_sha=$(get_manifest_sha "treehouses/alpine-node" "arm")
+  - echo $treehouses_rpi_sha
+  - node_arm64_sha=$(get_variant_sha "node" "alpine3.11" "arm64")
+  - echo $node_arm64_sha
+  - treehouses_alpine_node_arm64_sha=$(get_manifest_sha "treehouses/alpine-node" "arm64")
+  - echo $treehouses_alpine_node_arm64_sha
+  - flag=$(compare_sha  "$alpine_x86_sha" "$treehouses_alpine_x86_sha" "$balena_rpi_sha" "$treehouses_rpi_sha" "$node_arm64_sha" "treehouses_alpine_node_arm64_sha")
+  - echo $flag
+  - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
+#before_deploy:
+#  - tag="$(date +%Y%m%d%H%M)"
+#  - echo $tag
+#  - create_manifests treehouses/alpine-node $tag  "node@"$$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$balena_rpi_sha "node@"$node_arm64_sha
+#  - docker manifest inspect treehouses/alpine-node:latest
+#  - docker manifest inspect treehouses/alpine-node:$tag
+#deploy:
+#  - provider: script
+#    script: docker manifest push treehouses/alpine-node:latest; docker manifest push treehouses/alpine-node:$tag
+#    skip_cleanup: true
+#    on:
+#      all_branches: true
+#      condition: $flag = true
+env:
+  global:
+    - secure: "kWnYu5Bz1MngL05CO06c1OUxo4ABXC4HDQKoWkFWAgmwfIkzYUad/KCtlrw6lSkD1H8Bjep/Wh05Cfu4+xXi40Z7qMNTTGIjR8VIiZmh4QE/rSylajJjrDnRUS6b6zCwIJfHQQBRKPrOPHL2GejDqVoffYYyUOGUGdF+JXegZ20v7C8msmCQWLzycpwypgoSHMFuyVW8l0l2yR01RVD3PnqcCabmD+b/zYvEPP53POeRNqj1mWIRX8scC3rsvvDZWUoWQvDTeOVRmJJq6wM0/F9Lh3+vQYrHgDjyBKx6yKZlBF+RVH5FFcWEzLb2RdZ+zMpoEcvklY7032U0c8rYH0U5nrzofJpT+jXR28Yd386eXcRt1wPJAD7CaifkvUNzucXyHhkElosJ7O1drpdGdYtZKJanZVkbxxWQYsc01w3MK4NSlLCGfMhzgBlcTAafDcqh7+BHg3WIdTmodpOmgW0VgSB0Gr+DJiFDtJlRctv9NiWzGgLfWkPoGjZuEA723Jtl8trvZ1pF0bLUsEHq3jGsEBpzAaA9HccSsiZjd9qPAqnhY6EhwDpfJrJNIIQ4Bd/TZ1lHTYS9j52a8YiZlDG21+tHJisL/XdRgQfuxbfUNmHkbrpBmv04O46c24p2YPZOMZi5o8JiVri4H+rv8XBDx2rH54dhEFgeT/PxUTY="
