@@ -13,21 +13,21 @@ script:
   - echo $node_x86_sha
   - treehouses_alpine_node_x86_sha=$(get_manifest_sha "treehouses/alpine-node" "amd64")
   - echo $treehouses_alpine_node_x86_sha
-  - balena_rpi_sha=$(get_tag_sha "balenalib/raspberry-pi-alpine-node" "latest")
-  - echo $balena_rpi_sha
-  - treehouses_rpi_sha=$(get_manifest_sha "treehouses/alpine-node" "arm")
-  - echo $treehouses_rpi_sha
+  - balena_node_sha=$(get_tag_sha "balenalib/raspberry-pi-alpine-node" "latest")
+  - echo $balena_node_sha
+  - treehouses_rpi_node_sha=$(get_manifest_sha "treehouses/alpine-node" "arm")
+  - echo $treehouses_rpi_node_sha
   - node_arm64_sha=$(get_variant_sha "node" "alpine3.11" "arm64")
   - echo $node_arm64_sha
   - treehouses_alpine_node_arm64_sha=$(get_manifest_sha "treehouses/alpine-node" "arm64")
   - echo $treehouses_alpine_node_arm64_sha
-  - flag=$(compare_sha  "$alpine_x86_sha" "$treehouses_alpine_x86_sha" "$balena_rpi_sha" "$treehouses_rpi_sha" "$node_arm64_sha" "treehouses_alpine_node_arm64_sha")
+  - flag=$(compare_sha  "$node_x86_sha" "$treehouses_alpine_node_x86_sha" "$balena_node_sha" "$treehouses_rpi_node_sha" "$node_arm64_sha" "treehouses_alpine_node_arm64_sha")
   - echo $flag
   - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
 #before_deploy:
-#  - tag="$(date +%Y%m%d%H%M)"
+#  - tag="3.11-$(date +%Y%m%d%H%M)"
 #  - echo $tag
-#  - create_manifests treehouses/alpine-node $tag  "node@"$$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$balena_rpi_sha "node@"$node_arm64_sha
+#  - create_manifests treehouses/alpine-node $tag  "node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$balena_node_sha "node@"$node_arm64_sha
 #  - docker manifest inspect treehouses/alpine-node:latest
 #  - docker manifest inspect treehouses/alpine-node:$tag
 #deploy:
