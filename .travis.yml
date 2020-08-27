@@ -32,7 +32,7 @@ script:
 #  - docker manifest inspect treehouses/node:$tag
 #deploy:
 #  - provider: script
-#    script: docker manifest push treehouses/node:$tag; docker manifest push treehouses/node:latest
+#    script: docker manifest push treehouses/node:latest; docker manifest push treehouses/node:$tag
 #    skip_cleanup: true
 #    on:
 #      all_branches: true
