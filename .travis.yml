@@ -24,19 +24,19 @@ script:
   - flag=$(compare_sha  "$node_x86_sha" "$treehouses_node_x86_sha" "$node_arm_sha" "$treehouses_node_arm_sha" "$node_arm64_sha" "treehouses_node_arm64_sha")
   - echo $flag
   - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
-#before_deploy:
-#  - tag="3.11-$(date +%Y%m%d%H%M)"
-#  - echo $tag
-#  - create_manifests treehouses/node $tag  "node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$node_arm_sha "node@"$node_arm64_sha
-#  - docker manifest inspect treehouses/node:latest
-#  - docker manifest inspect treehouses/node:$tag
-#deploy:
-#  - provider: script
-#    script: docker manifest push treehouses/node:latest; docker manifest push treehouses/node:$tag
-#    skip_cleanup: true
-#    on:
-#      all_branches: true
-#      condition: $flag = true
+before_deploy:
+  - tag="3.11-$(date +%Y%m%d%H%M)"
+  - echo $tag
+  - create_manifests treehouses/node $tag  "node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$node_arm_sha "node@"$node_arm64_sha
+  - docker manifest inspect treehouses/node:latest
+  - docker manifest inspect treehouses/node:$tag
+deploy:
+  - provider: script
+    script: docker manifest push treehouses/node:latest; docker manifest push treehouses/node:$tag
+    skip_cleanup: true
+    on:
+      all_branches: true
+      condition: $flag = true
 env:
   global:
     secure: "INhtJAsjlI8wD0rAv1iwe+qspTv+QZoSmMJwpdItf7Xg64g/u+P7wTcH5KS2IK4G3gyd4aJf6l9Blqp7simLu2yWWIK80ZYe+TAwmCvvuroynYve1eMzziaaly/A9cxVfgtaZADvCT/DRFhWLKwqfVFIppGpJwliWo3KJntIuvTGlUzj2KGS6vPmiPLy2emcgooluS8Xi8PN7oLlsJtzSl/nr5g4ZONoEQF1pCIhWO96oNAWIRu5WjzcLAaF3f7EeX3pxD6B2b5ElQiDJQVEfXy977nNeK1vFeaqueGkgVy80cJlPYhh0JrdyhXUAma5Qhm1gXDBkRL5mdqO2YA7jhrlJVPMH5VT7BwTL1zkDoLXahllmgkUIpPRg+zj8VCmcUMZSBXeuwNWYMFO+mszIsw89WnEK78LyBnQuwtrZcHlSIM7yn+hc+1IdqQ9ijDe6z7mim/tZLQ10lHivhS67OU/Oo3dGLIsHxB21zwjyeTRZUi4DgCTnMdNrl4mV56YloTCuwJTTw8pqj/8Vo386pyHUPvYbs6UbvnSVYzwDaLQldbDIfsRI7dp2VvSqoPuzsAXblkw8Dz4wn/sTVyQB8JUziSj+Nwv4046GEy31dVjQ1/mo3kGTE2WnINa7RscxJicIFV4pmdWhwHvteMC4jwevTUbrIaW916ZBJfdxZE="
