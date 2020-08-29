@@ -9,7 +9,8 @@ services:
 script:
   - export DOCKER_CLI_EXPERIMENTAL=enabled
   - source sha_functions.sh
-  - node_x86_sha=$(get_variant_sha "node" "alpine3.11" "amd64")
+#  - node_x86_sha=$(get_tag_sha "balenalib/amd64-alpine-node" "latest")
+  - node_x86_sha=$(get_tag_sha "amd64/node" "alpine3.12")
   - echo $node_x86_sha
   - treehouses_node_x86_sha=$(get_manifest_sha "treehouses/node" "amd64")
   - echo $treehouses_node_x86_sha
@@ -17,7 +18,7 @@ script:
   - echo $node_arm_sha
   - treehouses_node_arm_sha=$(get_manifest_sha "treehouses/node" "arm")
   - echo $treehouses_node_arm_sha
-  - node_arm64_sha=$(get_variant_sha "node" "alpine3.11" "arm64")
+  - node_arm64_sha=$(get_tag_sha "balenalib/raspberrypi4-64-node" "latest")
   - echo $node_arm64_sha
   - treehouses_node_arm64_sha=$(get_manifest_sha "treehouses/node" "arm64")
   - echo $treehouses_node_arm64_sha
@@ -25,9 +26,10 @@ script:
   - echo $flag
   - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
 before_deploy:
-  - tag="3.11-$(date +%Y%m%d%H%M)"
+  - tag="3.12-$(date +%Y%m%d%H%M)"
   - echo $tag
-  - create_manifests treehouses/node $tag  "node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$node_arm_sha "node@"$node_arm64_sha
+#  - create_manifests treehouses/node $tag  "balenalib/amd64-alpine-node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$node_arm_sha "balenalib/raspberrypi4-64-node@"$node_arm64_sha
+  - create_manifests treehouses/node $tag  "amd64/node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$node_arm_sha "balenalib/raspberrypi4-64-node@"$node_arm64_sha
   - docker manifest inspect treehouses/node:latest
   - docker manifest inspect treehouses/node:$tag
 deploy:
