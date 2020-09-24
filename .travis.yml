@@ -23,18 +23,27 @@ script:
   - treehouses_node_arm64_sha=$(get_manifest_sha "treehouses/node" "arm64")
   - echo $treehouses_node_arm64_sha
   - flag=$(compare_sha "$node_x86_sha" "$treehouses_node_x86_sha" "$node_arm_sha" "$treehouses_node_arm_sha" "$node_arm64_sha" "$treehouses_node_arm64_sha")
+#  - flag=true
   - echo $flag
-  - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
 before_deploy:
-  - tag="3.12-$(date +%Y%m%d%H%M)"
+  - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
+  - time="$(date +%Y%m%d%H%M)"
+  - echo $time
+  - tag="3.12-$time"
   - echo $tag
 #  - create_manifests treehouses/node $tag  "balenalib/amd64-alpine-node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$node_arm_sha "balenalib/raspberrypi4-64-node@"$node_arm64_sha
   - create_manifests treehouses/node $tag  "amd64/node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$node_arm_sha "balenalib/raspberrypi4-64-node@"$node_arm64_sha
   - docker manifest inspect treehouses/node:latest
   - docker manifest inspect treehouses/node:$tag
+  - docker tag "amd64/node@"$node_x86_sha treehouses/node-tags:amd64
+  - docker tag "balenalib/raspberry-pi-alpine-node@"$node_arm_sha treehouses/node-tags:arm
+  - docker tag "balenalib/raspberrypi4-64-node@"$node_arm64_sha treehouses/node-tags:arm64
+  - docker tag "amd64/node@"$node_x86_sha treehouses/node-tags:amd64-$time
+  - docker tag "balenalib/raspberry-pi-alpine-node@"$node_arm_sha treehouses/node-tags:arm-$time
+  - docker tag "balenalib/raspberrypi4-64-node@"$node_arm64_sha treehouses/node-tags:arm64-$time
 deploy:
   - provider: script
-    script: docker manifest push treehouses/node:latest; docker manifest push treehouses/node:$tag
+    script: docker manifest push treehouses/node:latest; docker manifest push treehouses/node:$tag; docker push treehouses/node-tags:amd64; docker push treehouses/node-tags:arm; docker push treehouses/node-tags:arm64; docker push treehouses/node-tags:amd64-$time; docker push treehouses/node-tags:arm-$time; docker push treehouses/node-tags:arm64-$time
     skip_cleanup: true
     on:
       all_branches: true
