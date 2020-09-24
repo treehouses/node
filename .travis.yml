@@ -27,20 +27,23 @@ script:
   - echo $flag
 before_deploy:
   - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
-  - tag="3.12-$(date +%Y%m%d%H%M)"
+  - time="$(date +%Y%m%d%H%M)"
+  - echo $time
+  - tag="3.12-$time"
   - echo $tag
 #  - create_manifests treehouses/node $tag  "balenalib/amd64-alpine-node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$node_arm_sha "balenalib/raspberrypi4-64-node@"$node_arm64_sha
   - create_manifests treehouses/node $tag  "amd64/node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$node_arm_sha "balenalib/raspberrypi4-64-node@"$node_arm64_sha
   - docker manifest inspect treehouses/node:latest
   - docker manifest inspect treehouses/node:$tag
-  - timetag=$(date +%Y%m%d%H%M)
-  - echo $timetag
-  - docker tag "amd64/node@"$node_x86_sha treehouses/node-tags:amd64-$timetag
-  - docker tag "balenalib/raspberry-pi-alpine-node@"$node_arm_sha treehouses/node-tags:arm-$timetag
-  - docker tag "balenalib/raspberrypi4-64-node@"$node_arm64_sha treehouses/node-tags:arm64-$timetag
+  - docker tag "amd64/node@"$node_x86_sha treehouses/node-tags:amd64
+  - docker tag "balenalib/raspberry-pi-alpine-node@"$node_arm_sha treehouses/node-tags:arm
+  - docker tag "balenalib/raspberrypi4-64-node@"$node_arm64_sha treehouses/node-tags:arm64
+  - docker tag "amd64/node@"$node_x86_sha treehouses/node-tags:amd64-$time
+  - docker tag "balenalib/raspberry-pi-alpine-node@"$node_arm_sha treehouses/node-tags:arm-$time
+  - docker tag "balenalib/raspberrypi4-64-node@"$node_arm64_sha treehouses/node-tags:arm64-$time
 deploy:
   - provider: script
-    script: docker manifest push treehouses/node:latest; docker manifest push treehouses/node:$tag; docker push treehouses/node-tags:amd64; docker push treehouses/node-tags:arm; docker push treehouses/node-tags:arm64
+    script: docker manifest push treehouses/node:latest; docker manifest push treehouses/node:$tag; docker push treehouses/node-tags:amd64; docker push treehouses/node-tags:arm; docker push treehouses/node-tags:arm64; docker push treehouses/node-tags:amd64-$time; docker push treehouses/node-tags:arm-$time; docker push treehouses/node-tags:arm64-$time
     skip_cleanup: true
     on:
       all_branches: true
