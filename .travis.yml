@@ -23,7 +23,7 @@ script:
   - treehouses_node_arm64_sha=$(get_manifest_sha "treehouses/node" "arm64")
   - echo $treehouses_node_arm64_sha
   - flag=$(compare_sha "$node_x86_sha" "$treehouses_node_x86_sha" "$node_arm_sha" "$treehouses_node_arm_sha" "$node_arm64_sha" "$treehouses_node_arm64_sha")
-  - flag=true
+#  - flag=true
   - echo $flag
 before_deploy:
   - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
