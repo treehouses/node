@@ -33,9 +33,11 @@ before_deploy:
   - create_manifests treehouses/node $tag  "amd64/node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$node_arm_sha "balenalib/raspberrypi4-64-node@"$node_arm64_sha
   - docker manifest inspect treehouses/node:latest
   - docker manifest inspect treehouses/node:$tag
-  - docker tag "amd64/node@"$node_x86_sha treehouses/node-tags:amd64
-  - docker tag "balenalib/raspberry-pi-alpine-node@"$node_arm_sha treehouses/node-tags:arm
-  - docker tag "balenalib/raspberrypi4-64-node@"$node_arm64_sha treehouses/node-tags:arm64
+  - timetag=$(date +%Y%m%d%H%M)
+  - echo $timetag
+  - docker tag "amd64/node@"$node_x86_sha treehouses/node-tags:amd64-$timetag
+  - docker tag "balenalib/raspberry-pi-alpine-node@"$node_arm_sha treehouses/node-tags:arm-$timetag
+  - docker tag "balenalib/raspberrypi4-64-node@"$node_arm64_sha treehouses/node-tags:arm64-$timetag
 deploy:
   - provider: script
     script: docker manifest push treehouses/node:latest; docker manifest push treehouses/node:$tag; docker push treehouses/node-tags:amd64; docker push treehouses/node-tags:arm; docker push treehouses/node-tags:arm64
