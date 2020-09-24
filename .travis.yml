@@ -23,9 +23,10 @@ script:
   - treehouses_node_arm64_sha=$(get_manifest_sha "treehouses/node" "arm64")
   - echo $treehouses_node_arm64_sha
   - flag=$(compare_sha "$node_x86_sha" "$treehouses_node_x86_sha" "$node_arm_sha" "$treehouses_node_arm_sha" "$node_arm64_sha" "$treehouses_node_arm64_sha")
+  - flag=true
   - echo $flag
-  - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
 before_deploy:
+  - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
   - tag="3.12-$(date +%Y%m%d%H%M)"
   - echo $tag
 #  - create_manifests treehouses/node $tag  "balenalib/amd64-alpine-node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$node_arm_sha "balenalib/raspberrypi4-64-node@"$node_arm64_sha
