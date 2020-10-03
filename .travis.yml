@@ -8,7 +8,7 @@ services:
   - docker
 script:
   - export DOCKER_CLI_EXPERIMENTAL=enabled
-  - source sha_function.sh
+  - source sha_functions.sh
   - alpine_arm_sha=$(get_manifest_sha "treehouses/alpine:latest" "arm")
   - echo $alpine_arm_sha
   - node_arm_sha=$(get_manifest_sha "treehouses/node:latest" "arm")
