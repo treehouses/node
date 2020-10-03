@@ -1,12 +1,14 @@
 #!/bin/bash
+source sha_function.sh
 
 if [ $# -le 1 ]; then
   echo "missing parameters."
   exit 1
 fi
 
-dir=$(dirname $0)
-sha=$($dir/manifest-alpine-sha.sh $@)   # $1 vmnet8/alpine:latest  amd64|arm|arm64
+#dir=$(dirname $0)
+#sha=$($dir/manifest-alpine-sha.sh $@)   # $1 vmnet8/alpine:latest  amd64|arm|arm64
+sha=$(get_manifest_sha $@)
 echo $sha
 base_image="treehouses/alpine@$sha"
 echo $base_image
