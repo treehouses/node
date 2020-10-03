@@ -9,45 +9,51 @@ services:
 script:
   - export DOCKER_CLI_EXPERIMENTAL=enabled
   - source sha_functions.sh
-#  - node_x86_sha=$(get_tag_sha "balenalib/amd64-alpine-node" "latest")
-  - node_x86_sha=$(get_tag_sha "amd64/node" "alpine3.12")
-  - echo $node_x86_sha
-  - treehouses_node_x86_sha=$(get_manifest_sha "treehouses/node" "amd64")
-  - echo $treehouses_node_x86_sha
-  - node_arm_sha=$(get_tag_sha "balenalib/raspberry-pi-alpine-node" "latest")
+  - alpine_arm_sha=$(get_manifest_sha "treehouses/alpine:latest" "arm")
+  - echo $alpine_arm_sha
+  - node_arm_sha=$(get_manifest_sha "treehouses/node:latest" "arm")
   - echo $node_arm_sha
-  - treehouses_node_arm_sha=$(get_manifest_sha "treehouses/node" "arm")
-  - echo $treehouses_node_arm_sha
-  - node_arm64_sha=$(get_tag_sha "balenalib/raspberrypi4-64-node" "latest")
+  - flag_arm=$(is_base "treehouses/alpine@"$alpine_arm_sha "treehouses/node@"$node_arm_sha)
+  - echo $flag_arm
+  - alpine_amd64_sha=$(get_manifest_sha "treehouses/alpine:latest" "amd64")
+  - echo $alpine_amd64_sha
+  - node_amd64_sha=$(get_manifest_sha "treehouses/node:latest" "amd64")
+  - echo $node_amd64_sha
+  - flag_amd64=$(is_base "treehouses/alpine@"$alpine_amd64_sha "treehouses/node@"$node_amd64_sha)
+  - echo $flag_amd64
+  - alpine_arm64_sha=$(get_manifest_sha "treehouses/alpine:latest" "arm64")
+  - echo $alpine_arm64_sha
+  - node_arm64_sha=$(get_manifest_sha "treehouses/node:latest" "arm64")
   - echo $node_arm64_sha
-  - treehouses_node_arm64_sha=$(get_manifest_sha "treehouses/node" "arm64")
-  - echo $treehouses_node_arm64_sha
-  - flag=$(compare_sha "$node_x86_sha" "$treehouses_node_x86_sha" "$node_arm_sha" "$treehouses_node_arm_sha" "$node_arm64_sha" "$treehouses_node_arm64_sha")
-#  - flag=true
+  - flag_arm64=$(is_base "treehouses/alpine@"$alpine_arm64_sha "treehouses/node@"$node_arm64_sha)
+  - echo $flag_arm64
+  - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
+  - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+  - "./docker-build.sh treehouses/alpine:latest arm"
+  - "./docker-build.sh treehouses/alpine:latest arm64"
+  - "./docker-build.sh treehouses/alpine:latest amd64"
+  - flag=$(compare "treehouses/alpine@"$alpine_arm_sha "treehouses/node@"$node_arm_sha "treehouses/alpine@"$alpine_amd64_sha "treehouses/node@"$node_amd64_sha "treehouses/alpine@"$alpine_arm64_sha "treehouses/node@"$node_arm64_sha)
+#  - flag="true"
   - echo $flag
 before_deploy:
-  - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
-  - time="$(date +%Y%m%d%H%M)"
-  - echo $time
-  - tag="3.12-$time"
-  - echo $tag
-#  - create_manifests treehouses/node $tag  "balenalib/amd64-alpine-node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$node_arm_sha "balenalib/raspberrypi4-64-node@"$node_arm64_sha
-  - create_manifests treehouses/node $tag  "amd64/node@"$node_x86_sha "balenalib/raspberry-pi-alpine-node@"$node_arm_sha "balenalib/raspberrypi4-64-node@"$node_arm64_sha
-  - docker manifest inspect treehouses/node:latest
-  - docker manifest inspect treehouses/node:$tag
-  - docker tag "amd64/node@"$node_x86_sha treehouses/node-tags:amd64
-  - docker tag "balenalib/raspberry-pi-alpine-node@"$node_arm_sha treehouses/node-tags:arm
-  - docker tag "balenalib/raspberrypi4-64-node@"$node_arm64_sha treehouses/node-tags:arm64
-  - docker tag "amd64/node@"$node_x86_sha treehouses/node-tags:amd64-$time
-  - docker tag "balenalib/raspberry-pi-alpine-node@"$node_arm_sha treehouses/node-tags:arm-$time
-  - docker tag "balenalib/raspberrypi4-64-node@"$node_arm64_sha treehouses/node-tags:arm64-$time
+  - "./deploy.sh arm"
+  - "./deploy.sh arm64"
+  - "./deploy.sh amd64"
+  - timetag=$(date +%Y%m%d%H%M)
+  - echo $timetag
+  - tag1="latest"
+  - tag2=$timetag
+  - echo $tag2
+  - create_manifest treehouses/node $tag1 $tag2 treehouses/node-tags:amd64 treehouses/node-tags:arm treehouses/node-tags:arm64
+  - docker manifest inspect treehouses/node:$tag1
+  - docker manifest inspect treehouses/node:$tag2
 deploy:
   - provider: script
-    script: docker manifest push treehouses/node:latest; docker manifest push treehouses/node:$tag; docker push treehouses/node-tags:amd64; docker push treehouses/node-tags:arm; docker push treehouses/node-tags:arm64; docker push treehouses/node-tags:amd64-$time; docker push treehouses/node-tags:arm-$time; docker push treehouses/node-tags:arm64-$time
+    script: docker manifest push treehouses/node:$tag1; docker manifest push treehouses/node:$tag2
     skip_cleanup: true
     on:
       all_branches: true
-      condition: $flag = true
+      condition: "$flag = true"
 env:
   global:
-    secure: "INhtJAsjlI8wD0rAv1iwe+qspTv+QZoSmMJwpdItf7Xg64g/u+P7wTcH5KS2IK4G3gyd4aJf6l9Blqp7simLu2yWWIK80ZYe+TAwmCvvuroynYve1eMzziaaly/A9cxVfgtaZADvCT/DRFhWLKwqfVFIppGpJwliWo3KJntIuvTGlUzj2KGS6vPmiPLy2emcgooluS8Xi8PN7oLlsJtzSl/nr5g4ZONoEQF1pCIhWO96oNAWIRu5WjzcLAaF3f7EeX3pxD6B2b5ElQiDJQVEfXy977nNeK1vFeaqueGkgVy80cJlPYhh0JrdyhXUAma5Qhm1gXDBkRL5mdqO2YA7jhrlJVPMH5VT7BwTL1zkDoLXahllmgkUIpPRg+zj8VCmcUMZSBXeuwNWYMFO+mszIsw89WnEK78LyBnQuwtrZcHlSIM7yn+hc+1IdqQ9ijDe6z7mim/tZLQ10lHivhS67OU/Oo3dGLIsHxB21zwjyeTRZUi4DgCTnMdNrl4mV56YloTCuwJTTw8pqj/8Vo386pyHUPvYbs6UbvnSVYzwDaLQldbDIfsRI7dp2VvSqoPuzsAXblkw8Dz4wn/sTVyQB8JUziSj+Nwv4046GEy31dVjQ1/mo3kGTE2WnINa7RscxJicIFV4pmdWhwHvteMC4jwevTUbrIaW916ZBJfdxZE="
+    - secure: INhtJAsjlI8wD0rAv1iwe+qspTv+QZoSmMJwpdItf7Xg64g/u+P7wTcH5KS2IK4G3gyd4aJf6l9Blqp7simLu2yWWIK80ZYe+TAwmCvvuroynYve1eMzziaaly/A9cxVfgtaZADvCT/DRFhWLKwqfVFIppGpJwliWo3KJntIuvTGlUzj2KGS6vPmiPLy2emcgooluS8Xi8PN7oLlsJtzSl/nr5g4ZONoEQF1pCIhWO96oNAWIRu5WjzcLAaF3f7EeX3pxD6B2b5ElQiDJQVEfXy977nNeK1vFeaqueGkgVy80cJlPYhh0JrdyhXUAma5Qhm1gXDBkRL5mdqO2YA7jhrlJVPMH5VT7BwTL1zkDoLXahllmgkUIpPRg+zj8VCmcUMZSBXeuwNWYMFO+mszIsw89WnEK78LyBnQuwtrZcHlSIM7yn+hc+1IdqQ9ijDe6z7mim/tZLQ10lHivhS67OU/Oo3dGLIsHxB21zwjyeTRZUi4DgCTnMdNrl4mV56YloTCuwJTTw8pqj/8Vo386pyHUPvYbs6UbvnSVYzwDaLQldbDIfsRI7dp2VvSqoPuzsAXblkw8Dz4wn/sTVyQB8JUziSj+Nwv4046GEy31dVjQ1/mo3kGTE2WnINa7RscxJicIFV4pmdWhwHvteMC4jwevTUbrIaW916ZBJfdxZE=
