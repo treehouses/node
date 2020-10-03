@@ -1,5 +1,6 @@
 #!/bin/bash
-source sha_function.sh
+
+source sha_functions.sh
 
 if [ $# -le 1 ]; then
   echo "missing parameters."
