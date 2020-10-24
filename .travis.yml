@@ -34,9 +34,9 @@ script:
   #- "./docker-build.sh treehouses/alpine:latest amd64"
   - type build_image
   - type get_manifest_sha
-  - build_image "treehouses/alpine:latest" arm
-  - build_image "treehouses/alpine:latest" arm64
-  - build_image "treehouses/alpine:latest" amd64
+  - build_image "treehouses/alpine:latest" arm "treehouses/node"
+  - build_image "treehouses/alpine:latest" arm64 "treehouses/node"
+  - build_image "treehouses/alpine:latest" amd64 "treehouses/node"
   - flag=$(compare "treehouses/alpine@"$alpine_arm_sha "treehouses/node@"$node_arm_sha "treehouses/alpine@"$alpine_amd64_sha "treehouses/node@"$node_amd64_sha "treehouses/alpine@"$alpine_arm64_sha "treehouses/node@"$node_arm64_sha)
 #  - flag="true"
   - echo $flag

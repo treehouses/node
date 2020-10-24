@@ -86,8 +86,9 @@ create_manifest() {
 }
 
 build_image(){
-  local repo=$1
+  local repo=$1  # this is the base repo, for example treehouses/alpine
   local arch=$2  #arm arm64 amd64
+  local tag_repo=$3  # this is the tag repo, for example treehouses/node
   if [ $# -le 1 ]; then
     echo "missing parameters."
     exit 1
@@ -97,7 +98,7 @@ build_image(){
   base_image="$repo@$sha"
   echo $base_image
   if [ -n "$sha" ]; then
-    tag=$repo-tags:$arch
+    tag=$tag_repo-tags:$arch
     sed "s|{{base_image}}|$base_image|g" Dockerfile.template > Dockerfile.$arch
     docker build -t $tag -f Dockerfile.$arch .
   fi
