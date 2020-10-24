@@ -32,6 +32,8 @@ script:
   #- "./docker-build.sh treehouses/alpine:latest arm"
   #- "./docker-build.sh treehouses/alpine:latest arm64"
   #- "./docker-build.sh treehouses/alpine:latest amd64"
+  - type build_image
+  - type get_manifest_sha
   - build_image "treehouses/alpine:latest" arm
   - build_image "treehouses/alpine:latest" arm64
   - build_image "treehouses/alpine:latest" amd64

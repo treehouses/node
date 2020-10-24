@@ -100,7 +100,8 @@ build_image(){
     tag=$repo-tags:$arch
     sed "s|{{base_image}}|$base_image|g" Dockerfile.template > Dockerfile.$arch
     docker build -t $tag -f Dockerfile.$arch .
-fi}
+  fi
+}
 
 deploy_image(){
   local repo=$1
@@ -112,4 +113,5 @@ deploy_image(){
   docker tag $tag_arch $tag_arch_time
   docker push $tag_arch_time
   docker tag $tag_arch_time $tag_arch
-  docker push $tag_arch}
+  docker push $tag_arch
+}
