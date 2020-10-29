@@ -8,7 +8,7 @@ services:
   - docker
 script:
   - export DOCKER_CLI_EXPERIMENTAL=enabled
-  - source sha_functions.sh
+  - source utils.sh
   - alpine_arm_sha=$(get_manifest_sha "treehouses/alpine:latest" "arm")
   - echo $alpine_arm_sha
   - node_arm_sha=$(get_manifest_sha "treehouses/node:latest" "arm")
@@ -29,16 +29,16 @@ script:
   - echo $flag_arm64
   - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
   - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-  - "./docker-build.sh treehouses/alpine:latest arm"
-  - "./docker-build.sh treehouses/alpine:latest arm64"
-  - "./docker-build.sh treehouses/alpine:latest amd64"
+  - build_image "treehouses/alpine:latest" arm "treehouses/node"
+  - build_image "treehouses/alpine:latest" arm64 "treehouses/node"
+  - build_image "treehouses/alpine:latest" amd64 "treehouses/node"
   - flag=$(compare "treehouses/alpine@"$alpine_arm_sha "treehouses/node@"$node_arm_sha "treehouses/alpine@"$alpine_amd64_sha "treehouses/node@"$node_amd64_sha "treehouses/alpine@"$alpine_arm64_sha "treehouses/node@"$node_arm64_sha)
-#  - flag="true"
+  #- flag="true"
   - echo $flag
 before_deploy:
-  - "./deploy.sh arm"
-  - "./deploy.sh arm64"
-  - "./deploy.sh amd64"
+  - deploy_image "treehouses/node" arm
+  - deploy_image "treehouses/node" arm64
+  - deploy_image "treehouses/node" amd64
   - timetag=$(date +%Y%m%d%H%M)
   - echo $timetag
   - tag1="latest"
