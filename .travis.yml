@@ -44,7 +44,7 @@ before_deploy:
   - tag1="latest"
   - tag2=$timetag
   - echo $tag2
-  - create_manifest treehouses/node $tag1 $tag2 treehouses/node-tags:amd64 treehouses/node-tags:arm treehouses/node-tags:arm64
+  - create_manifests treehouses/node $tag1 $tag2 treehouses/node-tags:amd64 treehouses/node-tags:arm treehouses/node-tags:arm64
   - docker manifest inspect treehouses/node:$tag1
   - docker manifest inspect treehouses/node:$tag2
 deploy:
