@@ -26,6 +26,7 @@ script:
   - node_arm64_sha=$(get_manifest_sha "treehouses/node:latest" "arm64")
   - echo $node_arm64_sha
   - flag_arm64=$(is_base "treehouses/alpine@"$alpine_arm64_sha "treehouses/node@"$node_arm64_sha)
+  - flag_arm64=false
   - echo $flag_arm64
   - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
   - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
