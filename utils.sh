@@ -89,18 +89,24 @@ build_image(){
   local repo=$1  # this is the base repo, for example treehouses/alpine
   local arch=$2  #arm arm64 amd64
   local tag_repo=$3  # this is the tag repo, for example treehouses/node
+  local flag_$arch=$4   # flag_arm, flag_arm64, flag_amd64
   if [ $# -le 1 ]; then
     echo "missing parameters."
     exit 1
   fi
-  sha=$(get_manifest_sha $@)
-  echo $sha
-  base_image="$repo@$sha"
-  echo $base_image
-  if [ -n "$sha" ]; then
-    tag=$tag_repo-tags:$arch
-    sed "s|{{base_image}}|$base_image|g" Dockerfile.template > Dockerfile.$arch
-    docker build -t $tag -f Dockerfile.$arch .
+  if [ $4 = "false" ]; then
+    sha=$(get_manifest_sha $@)
+    echo $sha
+    base_image="$repo@$sha"
+    echo $base_image
+    if [ -n "$sha" ]; then
+      tag=$tag_repo-tags:$arch
+      sed "s|{{base_image}}|$base_image|g" Dockerfile.template > Dockerfile.$arch
+      docker build -t $tag -f Dockerfile.$arch .
+    fi
+  else
+    echo $tag_repo-tags:$arch
+    docker pull $tag_repo-tags:$arch
   fi
 }
 
