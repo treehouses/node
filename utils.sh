@@ -60,7 +60,7 @@ change() {
   flag_arm=$1
   flag_arm64=$2
   flag_amd64=$3
-  if [ $1 == "false" ] || [ $2 == "false" ] || [ $3 == "false" ];
+  if [ $flag_arm == "false" ] || [ $flag_arm64 == "false" ] || [ $flag_amd64 == "false" ];
   then
     echo "true"
   else
