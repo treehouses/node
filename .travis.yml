@@ -39,10 +39,8 @@ before_deploy:
   - deploy_image "treehouses/node" arm
   - deploy_image "treehouses/node" arm64
   - deploy_image "treehouses/node" amd64
-  - timetag=$(date +%Y%m%d%H%M)
-  - echo $timetag
   - tag1="latest"
-  - tag2=$timetag
+  - tag2=$(date +%Y%m%d%H%M)
   - echo $tag2
   - create_manifests treehouses/node $tag1 $tag2 treehouses/node-tags:amd64 treehouses/node-tags:arm treehouses/node-tags:arm64
   - docker manifest inspect treehouses/node:$tag1
