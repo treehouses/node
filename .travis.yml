@@ -32,7 +32,6 @@ script:
   - build_image "treehouses/alpine:latest" arm "treehouses/node" $flag_arm
   - build_image "treehouses/alpine:latest" arm64 "treehouses/node" $flag_arm64
   - build_image "treehouses/alpine:latest" amd64 "treehouses/node" $flag_amd64
-  #- flag=$(compare "treehouses/alpine@"$alpine_arm_sha "treehouses/node@"$node_arm_sha "treehouses/alpine@"$alpine_amd64_sha "treehouses/node@"$node_amd64_sha "treehouses/alpine@"$alpine_arm64_sha "treehouses/node@"$node_arm64_sha)
   - flag=$(change $flag_arm $flag_arm64 $flag_amd64)
   #- flag="true"
   - echo $flag
