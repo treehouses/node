@@ -32,17 +32,15 @@ script:
   - build_image "treehouses/alpine:latest" arm "treehouses/node" $flag_arm
   - build_image "treehouses/alpine:latest" arm64 "treehouses/node" $flag_arm64
   - build_image "treehouses/alpine:latest" amd64 "treehouses/node" $flag_amd64
-  - flag=$(compare "treehouses/alpine@"$alpine_arm_sha "treehouses/node@"$node_arm_sha "treehouses/alpine@"$alpine_amd64_sha "treehouses/node@"$node_amd64_sha "treehouses/alpine@"$alpine_arm64_sha "treehouses/node@"$node_arm64_sha)
+  - flag=$(change $flag_arm $flag_arm64 $flag_amd64)
   #- flag="true"
   - echo $flag
 before_deploy:
   - deploy_image "treehouses/node" arm
   - deploy_image "treehouses/node" arm64
   - deploy_image "treehouses/node" amd64
-  - timetag=$(date +%Y%m%d%H%M)
-  - echo $timetag
   - tag1="latest"
-  - tag2=$timetag
+  - tag2=$(date +%Y%m%d%H%M)
   - echo $tag2
   - create_manifests treehouses/node $tag1 $tag2 treehouses/node-tags:amd64 treehouses/node-tags:arm treehouses/node-tags:arm64
   - docker manifest inspect treehouses/node:$tag1
