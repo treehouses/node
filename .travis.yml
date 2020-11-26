@@ -9,12 +9,13 @@ services:
 script:
   - export DOCKER_CLI_EXPERIMENTAL=enabled
   - source utils.sh
-  - alpine_arm_sha=$(get_manifest_sha "treehouses/alpine:latest" "arm")
-  - echo $alpine_arm_sha
-  - node_arm_sha=$(get_manifest_sha "treehouses/node:latest" "arm")
-  - echo $node_arm_sha
-  - flag_arm=$(is_base "treehouses/alpine@"$alpine_arm_sha "treehouses/node@"$node_arm_sha)
-  - echo $flag_arm
+#  - alpine_arm_sha=$(get_manifest_sha "treehouses/alpine:latest" "arm")
+#  - echo $alpine_arm_sha
+#  - node_arm_sha=$(get_manifest_sha "treehouses/node:latest" "arm")
+#  - echo $node_arm_sha
+#  - flag_arm=$(is_base "treehouses/alpine@"$alpine_arm_sha "treehouses/node@"$node_arm_sha)
+#  - echo $flag_arm
+  - compare "treehouses/alpine:latest" "treehouses/node:latest" "arm")
   - alpine_amd64_sha=$(get_manifest_sha "treehouses/alpine:latest" "amd64")
   - echo $alpine_amd64_sha
   - node_amd64_sha=$(get_manifest_sha "treehouses/node:latest" "amd64")
