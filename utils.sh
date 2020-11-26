@@ -56,9 +56,9 @@ compare() {
   local image_repo=$2
   local arch=$3  #arm arm64 amd64
   base_sha=$(get_manifest_sha $base_repo $arch)
-  echo $base_sha
+  #echo $base_sha
   image_sha=$(get_manifest_sha $image_repo $arch)
-  echo $image_sha
+  #echo $image_sha
   flag_$arch=$(is_base "$base_repo@"$base_sha "$image_repo@"$image_sha)
   echo flag_$arch
 
