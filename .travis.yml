@@ -9,25 +9,9 @@ services:
 script:
   - export DOCKER_CLI_EXPERIMENTAL=enabled
   - source utils.sh
-#  - alpine_arm_sha=$(get_manifest_sha "treehouses/alpine:latest" "arm")
-#  - echo $alpine_arm_sha
-#  - node_arm_sha=$(get_manifest_sha "treehouses/node:latest" "arm")
-#  - echo $node_arm_sha
-#  - flag_arm=$(is_base "treehouses/alpine@"$alpine_arm_sha "treehouses/node@"$node_arm_sha)
-#  - echo $flag_arm
   - flag_arm=$(compare "treehouses/alpine:latest" "treehouses/node:latest" "arm")
-  - alpine_amd64_sha=$(get_manifest_sha "treehouses/alpine:latest" "amd64")
-  - echo $alpine_amd64_sha
-  - node_amd64_sha=$(get_manifest_sha "treehouses/node:latest" "amd64")
-  - echo $node_amd64_sha
-  - flag_amd64=$(is_base "treehouses/alpine@"$alpine_amd64_sha "treehouses/node@"$node_amd64_sha)
-  - echo $flag_amd64
-  - alpine_arm64_sha=$(get_manifest_sha "treehouses/alpine:latest" "arm64")
-  - echo $alpine_arm64_sha
-  - node_arm64_sha=$(get_manifest_sha "treehouses/node:latest" "arm64")
-  - echo $node_arm64_sha
-  - flag_arm64=$(is_base "treehouses/alpine@"$alpine_arm64_sha "treehouses/node@"$node_arm64_sha)
-  - echo $flag_arm64
+  - flag_arm64=$(compare "treehouses/alpine:latest" "treehouses/node:latest" "arm64")
+  - flag_amd64=$(compare "treehouses/alpine:latest" "treehouses/node:latest" "amd64")
   - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
   - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
   - build_image "treehouses/alpine:latest" arm "treehouses/node" $flag_arm

@@ -50,11 +50,11 @@ is_base() {
 }
 
 compare() {
-  local base_sha    # alpine
-  local image_sha   # new image
+  local base_sha    # treehouses/alpine
+  local image_sha   # for example treehouses/node
   local flag   # output
-  local base_repo=$1
-  local image_repo=$2
+  local base_repo=$1   # treehouses/alpine
+  local image_repo=$2  # treehouses/node
   local arch=$3  #arm arm64 amd64
   base_sha=$(get_manifest_sha $base_repo $arch)
   #echo $base_sha
