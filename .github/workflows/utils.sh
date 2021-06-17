@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Echos out sha function from saved .txt file
 get_manifest_sha() {
   local repo=$1
   local arch=$2
@@ -17,6 +18,7 @@ get_manifest_sha() {
   done < "$2".txt
 }
 
+# Echos out sha function
 get_sha() {
   repo=$1
   docker pull $1 &>/dev/null
@@ -24,6 +26,7 @@ get_sha() {
   echo $sha
 }
 
+# Check if base is part of an image
 is_base() {
   local base_sha    # alpine
   local image_sha   # new image
@@ -56,11 +59,11 @@ image_version() {
   echo $version
 }
 
-change() {
-  flag_arm=$1
-  flag_arm64=$2
-  flag_amd64=$3
-  if [ $flag_arm == "false" ] || [ $flag_arm64 == "false" ] || [ $flag_amd64 == "false" ];
+compare() {
+  result_arm=$(is_base $1 $2)
+  result_arm64=$(is_base $3 $4)
+  result_amd64=$(is_base $5 $6)
+  if [ $result_arm == "false" ] || [ $result_amd64 == "false" ] || [ $result_arm64 == "false" ];
   then
     echo "true"
   else
@@ -70,53 +73,41 @@ change() {
 
 create_manifest() {
   local repo=$1
-  local tag=$2
-  local x86=$3
-  local rpi=$4
-  local arm64=$5
-  docker manifest create $repo:$tag $x86 $rpi $arm64
-  docker manifest annotate $repo:$tag $x86 --arch amd64
-  docker manifest annotate $repo:$tag $rpi --arch arm
-  docker manifest annotate $repo:$tag $arm64 --arch arm64
-}
-
-create_manifests() {
-  local repo=$1
   local tag1=$2
   local tag2=$3
   local x86=$4
   local rpi=$5
   local arm64=$6
-  create_manifest $repo $tag1 $x86 $rpi $arm64
-  create_manifest $repo $tag2 $x86 $rpi $arm64
+  docker manifest create $repo:$tag1 $x86 $rpi $arm64
+  docker manifest create $repo:$tag2 $x86 $rpi $arm64
+  docker manifest annotate $repo:$tag1 $x86 --arch amd64
+  docker manifest annotate $repo:$tag1 $rpi --arch arm
+  docker manifest annotate $repo:$tag1 $arm64 --arch arm64
+  docker manifest annotate $repo:$tag2 $x86 --arch amd64
+  docker manifest annotate $repo:$tag2 $rpi --arch arm
+  docker manifest annotate $repo:$tag2 $arm64 --arch arm64
 }
 
-build_image() {
+build_image(){
   local repo=$1  # this is the base repo, for example treehouses/alpine
   local arch=$2  #arm arm64 amd64
   local tag_repo=$3  # this is the tag repo, for example treehouses/node
-  local flag_$arch=$4   # flag_arm, flag_arm64, flag_amd64
   if [ $# -le 1 ]; then
     echo "missing parameters."
     exit 1
   fi
-  if [ $4 = "false" ]; then
-    sha=$(get_manifest_sha $@)
-    echo $sha
-    base_image="$repo@$sha"
-    echo $base_image
-    if [ -n "$sha" ]; then
-      tag=$tag_repo-tags:$arch
-      sed "s|{{base_image}}|$base_image|g" Dockerfile.template > Dockerfile.$arch
-      docker build -t $tag -f Dockerfile.$arch .
-    fi
-  else
-    echo $tag_repo-tags:$arch
-    docker pull $tag_repo-tags:$arch
+  sha=$(get_manifest_sha $@)
+  echo $sha
+  base_image="$repo@$sha"
+  echo $base_image
+  if [ -n "$sha" ]; then
+    tag=$tag_repo-tags:$arch
+    sed "s|{{base_image}}|$base_image|g" Dockerfile.template > Dockerfile.$arch
+    docker build -t $tag -f Dockerfile.$arch .
   fi
 }
 
-deploy_image() {
+deploy_image(){
   local repo=$1
   local arch=$2  #arm arm64 amd64
   tag_arch=$repo-tags:$arch
