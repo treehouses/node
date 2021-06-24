@@ -1,6 +1,14 @@
-name: node
+name: node building on change
 
-on: [push]
+on: 
+  push:
+    branches:
+      - master
+      - main
+      - migrate-to-actions
+    workflow_dispatch:
+    repository_dispatch:
+      types: node
 
 jobs:
   build-deploy-node:
@@ -48,17 +56,31 @@ jobs:
           build_image "treehouses/alpine:latest" arm64 "$repo"
           flag=$(compare "treehouses/alpine@"$alpine_arm_sha "node@"$node_arm_sha "treehouses/alpine@"$alpine_amd64_sha "node@"$node_amd64_sha "treehouses/alpine@"$alpine_arm64_sha "node@"$node_arm64_sha "node" "node-tags:amd64")
           echo $flag
-          deploy_image "$repo" arm
-          deploy_image "$repo" amd64
-          deploy_image "$repo" arm64
-          tag=$(date +%Y%m%d%H%M)
-          tag2="latest"
-          echo $tag
-          create_manifest $repo $tag $tag2 $repo-tags:amd64 $repo-tags:arm $repo-tags:arm64
-          docker manifest inspect $repo:$tag
-          docker manifest inspect $repo:$tag2
           if [[ $flag == true ]]; then
-            docker manifest push $repo:$tag; docker manifest push $repo:$tag2
+            deploy_image "$repo" arm
+            deploy_image "$repo" amd64
+            deploy_image "$repo" arm64
+            sudo npm install -g @treehouses/cli
+            export gitter_channel="${{ secrets.CHANNEL }}"
+            echo "tags"
+            tag="$(date +%Y%m%d%H%M)"
+            echo $tag
+            docker manifest create $repo:$tag $repo-tags:amd64 $repo-tags:arm $repo-tags:arm64
+            docker manifest annotate $repo:$tag $repo-tags:amd64 --arch amd64
+            docker manifest annotate $repo:$tag $repo-tags:arm64 --arch arm64
+            docker manifest annotate $repo:$tag $repo-tags:arm --arch arm
+            docker manifest inspect $repo:$tag
+            docker manifest push $repo:$tag
+            tag2="latest"
+            echo $tag2
+            docker manifest create $repo:$tag2 $repo-tags:amd64 $repo-tags:arm $repo-tags:arm64
+            docker manifest annotate $repo:$tag2 $repo-tags:amd64 --arch amd64
+            docker manifest annotate $repo:$tag2 $repo-tags:arm64 --arch arm64
+            docker manifest annotate $repo:$tag2 $repo-tags:arm --arch arm
+            docker manifest inspect $repo:$tag2
+            docker manifest push $repo:$tag2
+            echo "https://hub.docker.com/r/rjpadilla/node/tags"
+            treehouses feedback "new rjpadilla/node check https://hub.docker.com/r/rjpadilla/node/tags"
           else
             echo "no changes"
           fi
