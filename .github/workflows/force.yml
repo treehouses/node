@@ -2,13 +2,13 @@ name: node building on change
 
 on: 
   push:
-    branches:
-      - master
-      - main
-      - migrate-to-actions
+    # branches:
+    #   - master
+    #   - main
+    #   - migrate-to-actions
     workflow_dispatch:
-    repository_dispatch:
-      types: node
+    # repository_dispatch:
+    #   types: node
 
 jobs:
   build-deploy-node:
@@ -55,11 +55,11 @@ jobs:
           flag=true #$(compare "treehouses/alpine@"$alpine_arm_sha "node@"$node_arm_sha "treehouses/alpine@"$alpine_amd64_sha "node@"$node_amd64_sha "treehouses/alpine@"$alpine_arm64_sha "node@"$node_arm64_sha "node" "node-tags:amd64")
           echo $flag
           if [[ $flag == true ]]; then
-            deploy_image "$repo" amd64
-            deploy_image "$repo" arm
-            deploy_image "$repo" arm64
-            sudo npm install -g @treehouses/cli
-            export gitter_channel="${{ secrets.CHANNEL }}"
+            # deploy_image "$repo" amd64
+            # deploy_image "$repo" arm
+            # deploy_image "$repo" arm64
+            # sudo npm install -g @treehouses/cli
+            # export gitter_channel="${{ secrets.CHANNEL }}"
             echo "tags"
             tag="$(date +%Y%m%d%H%M)"
             echo $tag
@@ -77,8 +77,8 @@ jobs:
             docker manifest annotate $repo:$tag2 $repo-tags:arm --arch arm
             docker manifest inspect $repo:$tag2
             docker manifest push $repo:$tag2
-            echo "https://hub.docker.com/r/rjpadilla/node/tags"
-            treehouses feedback "new rjpadilla/node check https://hub.docker.com/r/rjpadilla/node/tags"
+            # echo "https://hub.docker.com/r/rjpadilla/node/tags"
+            # treehouses feedback "new rjpadilla/node check https://hub.docker.com/r/rjpadilla/node/tags"
           else
             echo "no changes"
           fi
