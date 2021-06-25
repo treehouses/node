@@ -1,4 +1,4 @@
-name: node building on change
+name: node building on changes
 
 on: 
   push:
