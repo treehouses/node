@@ -1,7 +1,7 @@
 name: node building on change
 
 on: 
-  push:
+  # push:
     # branches:
     #   - master
     #   - main
