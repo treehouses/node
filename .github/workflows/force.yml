@@ -1,17 +1,16 @@
-name: node building on force
+name: build by force
 
 on: 
   # push:
     # branches:
     #   - master
     #   - main
-    #   - migrate-to-actions
     workflow_dispatch:
     # repository_dispatch:
     #   types: node
 
 jobs:
-  build-deploy-node:
+  node:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -21,8 +20,11 @@ jobs:
       - name: building node and deploying to docker
         run: |
           export DOCKER_CLI_EXPERIMENTAL=enabled
-          repo="rjpadilla/node"
+          repo="treehouses/node"
           source .github/workflows/utils.sh
+          sudo npm install -g @treehouses/cli
+          export gitter_channel="${{ secrets.CHANNEL }}"
+          echo "amd64"
           alpine_amd64_sha=$(get_manifest_sha "treehouses/alpine:latest" "amd64")
           echo $alpine_amd64_sha
           # node_amd64_sha=$(get_manifest_sha "node:latest" "amd64")
@@ -30,7 +32,7 @@ jobs:
           # echo "flag amd64"
           # flag_amd64=$(is_base "treehouses/alpine@"$alpine_amd64_sha "node@"$node_amd64_sha)
           # echo $flag_amd64
-          echo "alpine arm"
+          echo "arm"
           alpine_arm_sha=$(get_manifest_sha "treehouses/alpine:latest" "arm")
           echo $alpine_arm_sha
           # echo "node arm"
@@ -39,7 +41,7 @@ jobs:
           # echo "flag arm"
           # flag_arm=$(is_base "treehouses/alpine@"$alpine_arm_sha "node@"$node_arm_sha)
           # echo $flag_arm
-          echo "alpine arm64"
+          echo "arm64"
           alpine_arm64_sha=$(get_manifest_sha "treehouses/alpine:latest" "arm64")
           echo $alpine_arm64_sha
           # echo "node arm64"
@@ -48,18 +50,17 @@ jobs:
           # echo "flag arm64"
           # flag_arm64=$(is_base "treehouses/alpine@"$alpine_arm64_sha "node@"$node_arm64_sha)
           # echo $flag_arm64
-          # docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-          # build_image "treehouses/alpine:latest" amd64 "$repo"
-          # build_image "treehouses/alpine:latest" arm "$repo"
-          # build_image "treehouses/alpine:latest" arm64 "$repo"
+          echo "flag"
           flag=true #$(compare "treehouses/alpine@"$alpine_arm_sha "node@"$node_arm_sha "treehouses/alpine@"$alpine_amd64_sha "node@"$node_amd64_sha "treehouses/alpine@"$alpine_arm64_sha "node@"$node_arm64_sha "node" "node-tags:amd64")
           echo $flag
           if [[ $flag == true ]]; then
-            # deploy_image "$repo" amd64
-            # deploy_image "$repo" arm
-            # deploy_image "$repo" arm64
-            # sudo npm install -g @treehouses/cli
-            # export gitter_channel="${{ secrets.CHANNEL }}"
+            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+            build_image "treehouses/alpine:latest" amd64 "$repo"
+            build_image "treehouses/alpine:latest" arm "$repo"
+            build_image "treehouses/alpine:latest" arm64 "$repo"
+            deploy_image "$repo" amd64
+            deploy_image "$repo" arm
+            deploy_image "$repo" arm64
             echo "tags"
             tag="$(date +%Y%m%d%H%M)"
             echo $tag
@@ -77,8 +78,8 @@ jobs:
             docker manifest annotate $repo:$tag2 $repo-tags:arm --arch arm
             docker manifest inspect $repo:$tag2
             docker manifest push $repo:$tag2
-            # echo "https://hub.docker.com/r/rjpadilla/node/tags"
-            # treehouses feedback "new rjpadilla/node check https://hub.docker.com/r/rjpadilla/node/tags"
+            echo "https://hub.docker.com/r/treehouses/node/tags"
+            treehouses feedback "new treehouses/node check https://hub.docker.com/r/rjpadilla/node/tags"
           else
             echo "no changes"
           fi
