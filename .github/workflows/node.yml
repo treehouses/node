@@ -19,7 +19,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Running my custom action
-        uses: rjpadilla/utils-action@v1
+        uses: rjpadilla/utils-action@v1.1
+        with: 
+          your-name: "RJ"
       - name: login to docker
         run: docker login -u ${{ secrets.DOCKERUSERNAME }} -p ${{ secrets.DOCKERAPIKEY }}
       - name: building node and deploying to docker
