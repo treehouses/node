@@ -19,7 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Running my custom action
-        uses: rjpadilla/utils-action@v1.1
+        uses: rjpadilla/utils-action@v1.2
         with: 
           your-name: "RJ"
       - name: login to docker
