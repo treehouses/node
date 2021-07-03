@@ -21,7 +21,7 @@ jobs:
       - name: building node and deploying to docker
         run: |
           export DOCKER_CLI_EXPERIMENTAL=enabled
-          repo="rjpadilla/node"
+          repo="treehouses/node"
           source .github/workflows/utils.sh
           alpine_amd64_sha=$(get_manifest_sha "treehouses/alpine:latest" "amd64")
           echo $alpine_amd64_sha
@@ -77,8 +77,8 @@ jobs:
             docker manifest annotate $repo:$tag2 $repo-tags:arm --arch arm
             docker manifest inspect $repo:$tag2
             docker manifest push $repo:$tag2
-            # echo "https://hub.docker.com/r/rjpadilla/node/tags"
-            # treehouses feedback "new rjpadilla/node check https://hub.docker.com/r/rjpadilla/node/tags"
+            # echo "https://hub.docker.com/r/treehouses/node/tags"
+            # treehouses feedback "new treehouses/node check https://hub.docker.com/r/treehouses/node/tags"
           else
             echo "no changes"
           fi
