@@ -5,15 +5,12 @@ on:
     branches:
       - master
       - main
-      - migrate-to-actions
-      - switch-to-buildx
-      - custom-action
     workflow_dispatch:
     repository_dispatch:
       types: node
 
 jobs:
-  build-deploy-node:
+  node:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
