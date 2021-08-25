@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - main
+      - new-workflow
   workflow_dispatch:
     inputs:
       buildtype:
