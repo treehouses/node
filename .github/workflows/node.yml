@@ -1,83 +1,123 @@
-name: node building on changes
+name: build image
 
-on: 
+on:
   push:
     branches:
       - master
       - main
-    workflow_dispatch:
-    repository_dispatch:
-      types: node
+  workflow_dispatch:
+    inputs:
+      buildtype:
+        description: 'Build by "force" or on "change"'
+        required: true
+        default: 'force'
+  repository_dispatch:
+    types: node
 
 jobs:
-  node:
-    runs-on: ubuntu-20.04
+
+  compare:
+    runs-on: ubuntu-latest
+    outputs:
+      flag: ${{ steps.set-flag.outputs.flag }}
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm, arm64]
     steps:
-      - name: Checkout
+      - name: checkout repository
         uses: actions/checkout@v2
-      - name: login to docker
-        run: docker login -u ${{ secrets.DOCKERUSERNAME }} -p ${{ secrets.DOCKERAPIKEY }}
-      - name: building node and deploying to docker
+      - name: container registries
+        run: |
+          docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+          docker login docker.io -u ${{ secrets.DOCKERUSERNAME }} -p ${{ secrets.DOCKERAPIKEY }}
+      - name: compare image
+        id: set-flag
         run: |
           export DOCKER_CLI_EXPERIMENTAL=enabled
-          repo="treehouses/node"
-          source .github/workflows/utils.sh
-          alpine_amd64_sha=$(get_manifest_sha "treehouses/alpine:latest" "amd64")
-          echo $alpine_amd64_sha
-          node_amd64_sha=$(get_manifest_sha "node:latest" "amd64")
-          echo $node_amd64_sha
-          echo "flag amd64"
-          flag_amd64=$(is_base "treehouses/alpine@"$alpine_amd64_sha "node@"$node_amd64_sha)
-          echo $flag_amd64
-          echo "alpine arm"
-          alpine_arm_sha=$(get_manifest_sha "treehouses/alpine:latest" "arm")
-          echo $alpine_arm_sha
-          echo "node arm"
-          node_arm_sha=$(get_manifest_sha "node:latest" "arm")
-          echo $node_arm_sha
-          echo "flag arm"
-          flag_arm=$(is_base "treehouses/alpine@"$alpine_arm_sha "node@"$node_arm_sha)
-          echo $flag_arm
-          echo "alpine arm64"
-          alpine_arm64_sha=$(get_manifest_sha "treehouses/alpine:latest" "arm64")
-          echo $alpine_arm64_sha
-          echo "node arm64"
-          node_arm64_sha=$(get_manifest_sha "node:latest" "arm64")
-          echo $node_arm64_sha
-          echo "flag arm64"
-          flag_arm64=$(is_base "treehouses/alpine@"$alpine_arm64_sha "node@"$node_arm64_sha)
-          echo $flag_arm64
+          repo="treehouses/node-tags:${{ matrix.arch }}"
+          base="treehouses/alpine-tags:${{ matrix.arch }}"
+          docker pull -q $base &>/dev/null
+          docker pull -q $repo &>/dev/null
+          basesha=$(docker image inspect $base | jq --raw-output '.[0].RootFS.Layers|.[]')
+          reposha=$(docker image inspect $repo | jq --raw-output '.[0].RootFS.Layers|.[]')
+          echo "base sha:$basesha repo sha:$reposha"
+          ${{ github.event.inputs.buildtype  == 'force' }} && echo "::set-output name=flag::true" || echo "building on change"
+          [[ $reposha == *$basesha* ]] && echo "no changes" || echo "::set-output name=flag::true"
+
+  images:
+    needs: compare
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.set-build.outputs.build }}
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm, arm64]
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v2
+      - name: container registries
+        run: |
+          docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+          docker login docker.io -u ${{ secrets.DOCKERUSERNAME }} -p ${{ secrets.DOCKERAPIKEY }}
+      - name: docker image
+        if: ${{ needs.compare.outputs.flag }}
+        id: set-build
+        run: |
+          export DOCKER_CLI_EXPERIMENTAL=enabled
+          base="treehouses/alpine-tags:${{ matrix.arch }}"
+          repo="treehouses/node-tags"
+          dest="$repo:${{ matrix.arch }}"
+          date="$(date +%Y%m%d%H%M)"
           docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-          build_image "treehouses/alpine:latest" amd64 "$repo"
-          build_image "treehouses/alpine:latest" arm "$repo"
-          build_image "treehouses/alpine:latest" arm64 "$repo"
-          flag=$(compare "treehouses/alpine@"$alpine_arm_sha "node@"$node_arm_sha "treehouses/alpine@"$alpine_amd64_sha "node@"$node_amd64_sha "treehouses/alpine@"$alpine_arm64_sha "node@"$node_arm64_sha "node" "node-tags:amd64")
-          echo $flag
-          if [[ $flag == true ]]; then
-            deploy_image "$repo" amd64
-            deploy_image "$repo" arm
-            deploy_image "$repo" arm64
-            sudo npm install -g @treehouses/cli
-            export gitter_channel="${{ secrets.CHANNEL }}"
-            echo "tags"
-            tag="$(date +%Y%m%d%H%M)"
-            echo $tag
-            docker manifest create $repo:$tag $repo-tags:amd64 $repo-tags:arm $repo-tags:arm64
-            docker manifest annotate $repo:$tag $repo-tags:amd64 --arch amd64
-            docker manifest annotate $repo:$tag $repo-tags:arm64 --arch arm64
-            docker manifest annotate $repo:$tag $repo-tags:arm --arch arm
-            docker manifest inspect $repo:$tag
-            docker manifest push $repo:$tag
-            tag2="latest"
-            echo $tag2
-            docker manifest create $repo:$tag2 $repo-tags:amd64 $repo-tags:arm $repo-tags:arm64
-            docker manifest annotate $repo:$tag2 $repo-tags:amd64 --arch amd64
-            docker manifest annotate $repo:$tag2 $repo-tags:arm64 --arch arm64
-            docker manifest annotate $repo:$tag2 $repo-tags:arm --arch arm
-            docker manifest inspect $repo:$tag2
-            docker manifest push $repo:$tag2
-            echo "https://hub.docker.com/r/treehouses/node/tags"
-            treehouses feedback "new treehouses/node check https://hub.docker.com/r/treehouses/node/tags"
-          else
-            echo "no changes"
-          fi
+          docker build -t ghcr.io/$dest --build-arg BASE=$base .
+          docker tag ghcr.io/$dest docker.io/$dest
+          docker tag ghcr.io/$dest ghcr.io/$dest-$date
+          docker tag docker.io/$dest docker.io/$dest-$date
+          docker push --all-tags ghcr.io/$repo
+          docker push --all-tags docker.io/$repo
+          docker images
+          echo "::set-output name=build::true"
+
+  manifests:
+    needs: images
+    strategy:
+      fail-fast: false
+      matrix:
+        registry: [docker.io, ghcr.io]
+    runs-on: ubuntu-latest
+    outputs:
+      send: ${{ steps.set-send.outputs.send }}
+    steps:
+      - name: container registries
+        run: |
+          docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+          docker login docker.io -u ${{ secrets.DOCKERUSERNAME }} -p ${{ secrets.DOCKERAPIKEY }}
+      - name: create manifests
+        if: ${{ needs.images.outputs.build }}
+        id: set-send
+        run: |
+          repo="${{ matrix.registry }}/treehouses/node"
+          date="$(date +%Y%m%d%H%M)"
+          docker manifest create $repo:latest $repo-tags:amd64 $repo-tags:arm $repo-tags:arm64
+          docker manifest create $repo:$date $repo-tags:amd64 $repo-tags:arm $repo-tags:arm64
+          docker manifest annotate $repo:latest $repo-tags:arm --os linux --arch arm
+          docker manifest annotate $repo:$date $repo-tags:arm --os linux --arch arm
+          docker manifest inspect $repo:latest
+          docker manifest push $repo:latest
+          docker manifest push $repo:$date
+          echo "::set-output name=send::true"
+
+  message:
+    needs: manifests
+    runs-on: ubuntu-latest
+    steps:
+      - name: message chat of new image
+        if: ${{ needs.manifests.outputs.send }}
+        run: |
+          sudo npm install -g @treehouses/cli
+          export gitter_channel="${{ secrets.CHANNEL }}"
+          echo "https://hub.docker.com/r/treehouses/node/tags"
+          echo "https://github.com/treehouses/node/pkgs/container/node"
+          treehouses feedback "new treehouses/node check https://hub.docker.com/r/treehouses/node/tags or https://github.com/treehouses/node/pkgs/container/node"

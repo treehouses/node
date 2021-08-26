@@ -1,4 +1,0 @@
-FROM {{base_image}}
-
-RUN apk update; \
-    apk --update add --no-cache nodejs-current npm;
