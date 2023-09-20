@@ -117,7 +117,7 @@ jobs:
         if: ${{ needs.manifests.outputs.send }}
         run: |
           sudo npm install -g @treehouses/cli
-          export gitter_channel="${{ secrets.CHANNEL }}"
+          export discord_channel="${{ secrets.CHANNEL }}"
           echo "https://hub.docker.com/r/treehouses/node/tags"
           echo "https://github.com/treehouses/node/pkgs/container/node"
           treehouses feedback "new treehouses/node check https://hub.docker.com/r/treehouses/node/tags or https://github.com/treehouses/node/pkgs/container/node"
