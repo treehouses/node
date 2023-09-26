@@ -36,7 +36,7 @@ jobs:
         run: |
           export DOCKER_CLI_EXPERIMENTAL=enabled
           tags="$name-tags"
-          repo="$tags:${{ matrix.arch }}
+          repo="$tags:${{ matrix.arch }}"
           #-${{ matrix.version }}"
           base="treehouses/alpine-tags:${{ matrix.arch }}"
           docker pull -q $base &>/dev/null
