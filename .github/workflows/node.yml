@@ -92,8 +92,8 @@ jobs:
           docker tag image docker.io/$more
           docker tag image ghcr.io/$full
           docker tag image docker.io/$full
-          docker push --all-tags ghcr.io/$tags
-          docker push --all-tags docker.io/$tags
+          docker push --all-tags --force ghcr.io/$tags
+          docker push --all-tags --force docker.io/$tags
           docker images
           echo "manifests=true" >> $GITHUB_OUTPUT
 
