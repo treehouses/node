@@ -36,7 +36,7 @@ jobs:
           export DOCKER_CLI_EXPERIMENTAL=enabled
           tags="$name-tags"
           repo="$tags:${{ matrix.arch }}-${{ matrix.version }}"
-          base="treehouses/alpine-tags:${{ matrix.arch }}"
+          base="treehouses/alpine-tags:${{ matrix.arch }}-${{ matrix.version }}"
           docker pull -q $base &>/dev/null
           docker pull -q $repo &>/dev/null
           basesha=$(docker image inspect $base | jq --raw-output '.[0].RootFS.Layers|.[]')
