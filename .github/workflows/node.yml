@@ -74,7 +74,7 @@ jobs:
           export DOCKER_CLI_EXPERIMENTAL=enabled
           tags="$name-tags"
           repo="$tags:${{ matrix.arch }}"
-          more="treehouses/alpine-tags:${{ matrix.arch }}-${{ matrix.version }}"
+          more="$repo-${{ matrix.version }}"
           base="treehouses/alpine-tags:${{ matrix.arch }}"
           time=$(date +%Y%m%d%H%M)
           date="$repo-$time"
