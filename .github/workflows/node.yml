@@ -15,7 +15,6 @@ on:
     types: node
 
 jobs:
-
   compare:
     runs-on: ubuntu-latest
     outputs:
@@ -38,12 +37,12 @@ jobs:
           repo="$tags:${{ matrix.arch }}-${{ matrix.version }}"
           base="treehouses/alpine-tags:${{ matrix.arch }}-${{ matrix.version }}"
           docker pull -q $base &>/dev/null
-          #docker pull -q $repo &>/dev/null
+          docker pull -q $repo &>/dev/null
           basesha=$(docker image inspect $base | jq --raw-output '.[0].RootFS.Layers|.[]')
-          #reposha=$(docker image inspect $repo | jq --raw-output '.[0].RootFS.Layers|.[]')
+          reposha=$(docker image inspect $repo | jq --raw-output '.[0].RootFS.Layers|.[]')
           echo "base sha:$basesha repo sha:$reposha"
           ${{ github.event.inputs.buildtype  == 'force' }} && echo "images=true" >> $GITHUB_OUTPUT || echo "no force" 
-          #[[ $reposha == *$basesha* ]] && echo "no changes" || echo "images=true" >> $GITHUB_OUTPUT
+          [[ $reposha == *$basesha* ]] && echo "no changes" || echo "images=true" >> $GITHUB_OUTPUT
 
   images:
     needs: compare
